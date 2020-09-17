@@ -1,9 +1,9 @@
-output: object
-	gcc hello.c
-object: compile
-	gcc hello.c -o hello.o
-compile: preprocess
+output:
+	gcc hello.c -o hello
+object: hello.c
+	gcc -c hello.c -o hello.o
+compile: hello.c
 	gcc -S hello.c 
-preprocess: 
-	gcc -E hello.c > hello.txt
+preprocess: hello.c
+	gcc -E hello.c -o hello.i
 all: ouput
