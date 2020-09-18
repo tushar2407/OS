@@ -1,16 +1,16 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-int64_t long_add(int64_t, int64_t, int64_t, int64_t);
-int64_t extended_long(int64_t, int64_t, int64_t, int64_t);
+int32_t long_add(int32_t, int32_t, int32_t, int32_t);
+// int64_t extended_long(int64_t, int64_t, int64_t, int64_t);
 
 int main(){
-    long a,b,c,d;
-    scanf("%ld",&a);
-    scanf("%ld",&b);
-    scanf("%ld",&c);
-    scanf("%ld",&d);
-    long e =extended_long(a,b,c,d);
-    printf("%ld",e);
+    int a,b,c,d;
+    scanf("%d",&a);
+    scanf("%d",&b);
+    scanf("%d",&c);
+    scanf("%d",&d);
+    int e =long_add(a,b,c,d);
+    printf("%d",e);
     return 0;
 }
