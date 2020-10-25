@@ -1,0 +1,31 @@
+Description of the programs written in C language:
+
+1. P3_1.c 
+    - this code is written in accordance with the first part of the question 3.
+    - it declares a char array "x" of size 64.
+    - subsequently a pointer of type long int is initialized at the start of the 
+        previously defined char array "x".
+    - another long int pointer is initialized to mark the end of the char array x.
+    - "val" is variable initialized to store different values at different locations 
+        where the pointer points at later times.
+    - the program consists of a for loop which is used increment the first pointer "a" 
+        till it points at the same reference as that of "b" (which marks the end of "x")
+    - after every increment of "a", it moves 8 bytes ahead in memory 
+        (as the size of long int is 8 bytes), which is equivalent to char array 
+        size of 8 (as the size of a char is 1 byte). Hence, only 8 long integers can 
+        be stored in a char array of size 64.
+
+2. P3_2.c
+    - this code is written in accordance with the second part of the question 3.
+    - it declares a char array "x" of size 64.
+    - subsequently a pointer of type int is initialized at the start of the 
+        previously defined char array "x".
+    - another int pointer is initialized to mark the end of the char array x.
+    - "val" is variable initialized to store different values at different locations 
+        where the pointer points at later times.
+    - the program consists of a for loop which is used increment the first pointer "a" 
+        till it points at the same reference as that of "b" (which marks the end of "x")
+    - after every increment of "a", it moves 4 bytes ahead in memory
+        (as the size of int is 4 bytes), 
+        which is equivalent to char array size of 4. Hence, only 16 integers can 
+        be stored in a char array of size 64.

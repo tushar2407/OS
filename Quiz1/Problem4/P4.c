@@ -11,6 +11,7 @@ int main(){
     scanf("%d",&c);
     scanf("%d",&d);
     int e =long_add(a,b,c,d);
+    // int e =extended_long(a,b,c,d);
     printf("%d",e);
     return 0;
 }

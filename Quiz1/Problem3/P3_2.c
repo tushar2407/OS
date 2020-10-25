@@ -1,6 +1,5 @@
 #include <stdio.h>
 int main(){
-
     char x[64];
     int *a=(int*)&x;
     int *b=(int*)&(x[64]);

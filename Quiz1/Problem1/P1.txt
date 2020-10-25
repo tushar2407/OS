@@ -1,0 +1,40 @@
+Commands used in Makefile:
+    nasm -felf64 P1.asm -o P1.o
+	gcc -c P1.c -o P1_1.o
+	ld -e main P1.o P1_1.o -o P1
+	./P1
+
+Programs description:
+
+    I ASM file:
+        1. _start
+            - the driver function for which the assembler looks for first during program run
+            - moves values to rdi and rsi using immediate addressing.
+        2. checkGreater
+            - compare the values in rdi and rsi and accordingly call "print1" label or "print0" label
+        3. print0
+            - used to print "0" on standard output when value in x (here, rdi) is smaller than the value in y (here, rsi )
+        4. print1
+            - used to print "1" on standard output when value in x (here, rdi) is greater than the value in y (here, rsi )
+    II C file:
+        1. main():
+            - it initilizes 2 variable x and y, and then calls checkGreater label located in P1.asm.
+Command description:
+
+    1. nasm -felf64 P1.asm -o P1.o
+        - makes the object file for the assembly code
+    2. gcc -c P1.c -o P1_1.o
+        - makes the object file for c language code
+    3. ld -e main P1.o P1_1.o -o P1
+        - links the 2 objects files from the first 2 commands defining the main() in c code as driver function and outputs executable file - P1
+    4. ./P1
+        - runs the P1 executable file
+
+Reasons why the 2 files work together:
+The files work together because of the "ld -e main P1.o P1_1.o -o P1" command.
+Which specifies for the assembler which entry point to consider of the 2
+entry points it encounters. And it is for this very reason,
+that we don't use the "gcc P1.c P1.o -o P1" ans instead the above specified
+command.
+Hence, yes there can be 2 entry points, but if you don't specify which
+entry point to consider, the the linker will through an error.

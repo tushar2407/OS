@@ -1,5 +1,4 @@
 global long_add
-global extended_long
 long_add:
     push ebp
     mov ebp, esp
@@ -10,3 +9,8 @@ long_add:
     mov esp,ebp
     pop ebp
     ret
+    ;mov eax, edi
+    ;add eax, esi
+    ;add eax, edx
+    ;add eax, ecx
+    ;ret

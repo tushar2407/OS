@@ -1,0 +1,32 @@
+cd -L c
+Assignment1cd -P
+cd ..
+cd ..
+cd ques2
+ment1ls
+cd ..
+cd ..
+cd ..
+cd .
+cd ques2/c
+cd ques2
+ccd c
+cd -P c
+date
+date -u
+m.cdate -R
+m.cexit
+cd A1
+mkdir A1
+ls
+mkdir /home/tushar/c/OS/Assignment1/A2
+ls
+rm -d A1
+me/tushar/c/OS/Assignment1/A2ls
+exit
+ls
+rm -d A2
+ls
+rm cd.c
+ls
+exit

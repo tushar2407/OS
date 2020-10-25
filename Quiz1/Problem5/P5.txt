@@ -1,0 +1,14 @@
+﻿Answer :  Real mode
+
+Justification:
+
+According to me, there is no correct answer to the given question.
+Using real mode or long mode totally depends on the need of 
+the programmer and the user.
+If the computational power is the main priority, then use
+long mode for running the assmebly program, else use real
+mode if you want to fit a large program into the RAM during runtime, 
+which will affect the running time of your code.
+Secondly, real mode is faster as compared to long mode. 
+Moreover, in real mode, 32bit and 64bit registers also accessible, 
+so that gives it an upper hand over long mode.

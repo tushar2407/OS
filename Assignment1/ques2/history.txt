@@ -1,0 +1,21 @@
+history 
+cecho 
+echo -n
+
+cecho -m asdsd
+echo --help
+decho -n adasdsa
+cat rm.c
+dasdsacat -E rm.c
+dsacat -n rm.c
+dsacd ..
+date
+date -u
+exit
+date 
+exit
+date 
+date -u
+date -R
+cd ..
+cd ..

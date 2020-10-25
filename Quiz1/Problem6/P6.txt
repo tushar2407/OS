@@ -1,0 +1,7 @@
+Instructions to run the codes:
+    1. Command to run both codes at the same time:
+        - make
+    2. Command to run P6_1.c:
+        - make main
+    3. Command to run P6_2.c:
+        - make disk

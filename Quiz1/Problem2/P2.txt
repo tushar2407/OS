@@ -1,0 +1,29 @@
+﻿Command :
+
+    gcc -c P2.c
+
+    - -c flag only compiles the P2.c code written in C language
+
+Errors and exceptions encountered:
+  
+
+1. problem2.c:1:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+add(float a, float b){
+
+    - The above warning was encountered as no return type was mentioned during 
+        the function definition of add(). To which the compiler by default assigns 
+        ‘int’ as the return type.
+    
+2. problem2.c: In function ‘add’:
+problem2.c:2:20: warning: implicit declaration of function ‘round’ [-Wimplicit-function-declaration]
+         return (float)(round(a)+round(b));
+problem2.c:2:20: warning: incompatible implicit declaration of built-in function ‘round’
+problem2.c:2:20: note: include ‘<math.h>’ or provide a declaration of ‘round’
+
+
+    - The above warning occurred as the function ‘round’ was used without 
+        its declaration and definition. 
+    - ‘round()’ being a function present in the ‘math.h’ header file, 
+        the compiler suggests to either import that header file or to include 
+        a function definition for ‘round’ so as to instruct it what to do when 
+        the program calls it.

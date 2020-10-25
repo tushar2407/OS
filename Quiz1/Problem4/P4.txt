@@ -1,0 +1,19 @@
+Justification:
+    The change is needed when writing in x86(32 bit)
+    and while writing in x86_64(64 bit) as the input 
+    integers through "scanf" are stored in registers
+    for x86_64 assembly while in the stack for x86 assembly.
+    Hence, the codes for the 2 will be different.
+    Moreover, the way to compile them with the exteral
+    C code is also different. Hence, 2 assembly codes are
+    needed.
+
+Instructions to test the program:
+1. In order to run the code using x86(32 bit) assembly,
+    comment the extended_long containing lines in
+    the C code and in the terminal run the command:
+        - make
+2. In order to run the code using x86_64(64 bit) assembly,
+    comment the long_add containing lines in
+    the C code and in the terminal run the command:
+        - make bit64
