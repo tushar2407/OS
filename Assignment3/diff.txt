@@ -1,0 +1,150 @@
+diff -Naur linux-5.9.8/arch/x86/entry/syscalls/syscall_64.tbl mod_linux-5.9.8/arch/x86/entry/syscalls/syscall_64.tbl
+--- linux-5.9.8/arch/x86/entry/syscalls/syscall_64.tbl	2020-11-11 01:46:17.000000000 +0530
++++ mod_linux-5.9.8/arch/x86/entry/syscalls/syscall_64.tbl	2020-11-12 14:15:43.267213000 +0530
+@@ -361,7 +361,7 @@
+ 437	common	openat2			sys_openat2
+ 438	common	pidfd_getfd		sys_pidfd_getfd
+ 439	common	faccessat2		sys_faccessat2
+-
++440	common	soft_rt		sys_soft_rt
+ #
+ # x32-specific system call numbers start at 512 to avoid cache impact
+ # for native 64-bit operation. The __x32_compat_sys stubs are created
+diff -Naur linux-5.9.8/include/linux/sched.h mod_linux-5.9.8/include/linux/sched.h
+--- linux-5.9.8/include/linux/sched.h	2020-11-11 01:46:17.000000000 +0530
++++ mod_linux-5.9.8/include/linux/sched.h	2020-11-12 14:17:53.882454000 +0530
+@@ -459,7 +459,8 @@
+ 	u64				sum_exec_runtime;
+ 	u64				vruntime;
+ 	u64				prev_sum_exec_runtime;
+-
++	
++	u64				soft_real_time;
+ 	u64				nr_migrations;
+ 
+ 	struct sched_statistics		statistics;
+diff -Naur linux-5.9.8/kernel/sched/core.c mod_linux-5.9.8/kernel/sched/core.c
+--- linux-5.9.8/kernel/sched/core.c	2020-11-11 01:46:17.000000000 +0530
++++ mod_linux-5.9.8/kernel/sched/core.c	2020-11-12 14:18:42.815590000 +0530
+@@ -3070,6 +3070,7 @@
+ 	p->se.prev_sum_exec_runtime	= 0;
+ 	p->se.nr_migrations		= 0;
+ 	p->se.vruntime			= 0;
++	p->se.soft_real_time		= 0;
+ 	INIT_LIST_HEAD(&p->se.group_node);
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+diff -Naur linux-5.9.8/kernel/sched/fair.c mod_linux-5.9.8/kernel/sched/fair.c
+--- linux-5.9.8/kernel/sched/fair.c	2020-11-11 01:46:17.000000000 +0530
++++ mod_linux-5.9.8/kernel/sched/fair.c	2020-11-12 17:37:15.415217348 +0530
+@@ -534,7 +534,14 @@
+ static inline int entity_before(struct sched_entity *a,
+ 				struct sched_entity *b)
+ {
+-	return (s64)(a->vruntime - b->vruntime) < 0;
++
++	s64 vdiff = a->vruntime - b->vruntime;
++	s64 rtdiff = a->soft_real_time - b->soft_real_time;
++	if(rtdiff == 0)
++	{
++		return vdiff<0;
++	}
++	return rtdiff>0;
+ }
+ 
+ static void update_min_vruntime(struct cfs_rq *cfs_rq)
+@@ -859,6 +866,19 @@
+ 
+ 	curr->sum_exec_runtime += delta_exec;
+ 	schedstat_add(cfs_rq->exec_clock, delta_exec);
++	
++	if(curr->soft_real_time != 0)
++	{
++		if(curr->soft_real_time >= delta_exec)
++		{
++			curr->soft_real_time -= delta_exec;
++		}
++		else 
++		{
++			curr->soft_real_time = 0;
++		}
++		return;
++	}
+ 
+ 	curr->vruntime += calc_delta_fair(delta_exec, curr);
+ 	update_min_vruntime(cfs_rq);
+@@ -6999,6 +7019,9 @@
+ 	do {
+ 		struct sched_entity *curr = cfs_rq->curr;
+ 
++		if(curr != NULL && curr->soft_real_time>0)
++			return task_of(curr);
++		
+ 		/*
+ 		 * Since we got here without doing put_prev_entity() we also
+ 		 * have to consider cfs_rq->curr. If it is still a runnable
+diff -Naur linux-5.9.8/Makefile mod_linux-5.9.8/Makefile
+--- linux-5.9.8/Makefile	2020-11-11 01:46:17.000000000 +0530
++++ mod_linux-5.9.8/Makefile	2020-11-12 16:42:27.158511946 +0530
+@@ -1094,7 +1094,7 @@
+ export MODULES_NSDEPS := $(extmod-prefix)modules.nsdeps
+ 
+ ifeq ($(KBUILD_EXTMOD),)
+-core-y		+= kernel/ certs/ mm/ fs/ ipc/ security/ crypto/ block/
++core-y		+= kernel/ certs/ mm/ fs/ ipc/ security/ crypto/ block/ soft_rt/
+ 
+ vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, \
+ 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
+diff -Naur linux-5.9.8/soft_rt/Makefile mod_linux-5.9.8/soft_rt/Makefile
+--- linux-5.9.8/soft_rt/Makefile	1970-01-01 05:30:00.000000000 +0530
++++ mod_linux-5.9.8/soft_rt/Makefile	2020-11-06 01:38:32.367402000 +0530
+@@ -0,0 +1 @@
++obj-y := soft_rt.o
+diff -Naur linux-5.9.8/soft_rt/soft_rt.c mod_linux-5.9.8/soft_rt/soft_rt.c
+--- linux-5.9.8/soft_rt/soft_rt.c	1970-01-01 05:30:00.000000000 +0530
++++ mod_linux-5.9.8/soft_rt/soft_rt.c	2020-11-12 16:42:42.962563044 +0530
+@@ -0,0 +1,32 @@
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/syscalls.h>
++#include <linux/fs.h>
++#include <asm/segment.h>
++#include <asm/uaccess.h>
++#include <linux/buffer_head.h>
++#include <linux/module.h>
++#include <linux/linkage.h>
++#include <linux/uaccess.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/module.h>
++SYSCALL_DEFINE2(soft_rt,long,pid,long,time)
++{
++    
++    if (time<0){
++    	printk(KERN_ALERT "Invalid value of time\n");
++    	return 1;
++    }
++    struct task_struct* proces = find_task_by_vpid((pid_t)pid);
++    
++    if(proces==NULL){
++        printk(KERN_ALERT "Process with the given Pid does not exist\n");
++        return ESRCH;
++    }
++    printk("Value of soft real time nice is changed  %s\n",proces->comm);
++    proces->se.soft_real_time=time;
++    
++    return 0;
++}
+diff -Naur linux-5.9.8/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl mod_linux-5.9.8/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl
+--- linux-5.9.8/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl	2020-11-11 01:46:17.000000000 +0530
++++ mod_linux-5.9.8/tools/perf/arch/x86/entry/syscalls/syscall_64.tbl	2020-11-12 14:16:08.830025000 +0530
+@@ -361,7 +361,7 @@
+ 437	common	openat2			sys_openat2
+ 438	common	pidfd_getfd		sys_pidfd_getfd
+ 439	common	faccessat2		sys_faccessat2
+-
++440	common	soft_rt		sys_soft_rt
+ #
+ # x32-specific system call numbers start at 512 to avoid cache impact
+ # for native 64-bit operation. The __x32_compat_sys stubs are created
